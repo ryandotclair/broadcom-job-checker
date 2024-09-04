@@ -26,3 +26,4 @@ To run the script, simply run `docker run -it -e APP_TOKEN="<app_token>" -e USER
   - `jobs.txt` holds the "last run" and is used to compare against the newest job grab
   - `jobs.new.txt` hold the latest job listing. If there's a job in this file that's not in the jobs.txt file, then that job's URL gets pushed to your phone
   - `jobs.log` stores all the logs, and should automatically get pruned if it exceeds 1MB
+- By default this checks for two specific locations (Plano, TX and Remote-TX). This can be configured by looking at the URL once you've set your filters appropriately and modifying `jobs.py` lines 44 and 45. (ex: https://broadcom.wd1.myworkdayjobs.com/External_Career?locations=036f545a07811067fe3102fad18abe98&locations=0dd627624e2e013c1b0b00dadcd9d20c). 
