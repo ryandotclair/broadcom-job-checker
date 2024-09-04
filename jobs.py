@@ -1,6 +1,7 @@
 import requests
-import json
+# import json
 import os
+import logging
 
 # Define the file names
 new_jobs_file = '/appdata/jobs.new.txt'
@@ -9,6 +10,19 @@ jobs_file = '/appdata/jobs.txt'
 # Define tokens
 user_token = os.getenv("USER_TOKEN")
 app_token = os.getenv("APP_TOKEN")
+
+# Define and configure logger
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename='jobs.log', encoding='utf-8', level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+file_handler = logging.FileHandler('/appdata/jobs.log')
+file_handler.setLevel(logging.INFO)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 # Define the URL and headers
 url = 'https://broadcom.wd1.myworkdayjobs.com/wday/cxs/broadcom/External_Career/jobs'
@@ -44,7 +58,7 @@ if response.status_code == 200:
         for path in job_paths:
             file.write(f"https://broadcom.wd1.myworkdayjobs.com/External_Career{path}\n")
 
-    print("jobs.new.txt file has been updated")
+    logger.info("jobs.new.txt file has been updated")
 
     # Read the contents of the files into sets
     with open(new_jobs_file, 'r') as f:
@@ -55,7 +69,7 @@ if response.status_code == 200:
         # If it doesn't exist, create it by copying the new jobs file and "initiate" this script.
         with open(jobs_file, 'w') as f:
             f.write('\n'.join(sorted(new_jobs)))
-        print(f"{jobs_file} did not exist, so it was created with the contents of {new_jobs_file}.")
+        logger.info(f"{jobs_file} did not exist, so it was created with the contents of {new_jobs_file}.")
     else:
         # If the old jobs file exists, read its contents into a set
         with open(jobs_file, 'r') as f:
@@ -63,25 +77,25 @@ if response.status_code == 200:
 
         # Check if the files match fully
         if new_jobs == jobs:
-            print("No new jobs!")
-            print(f"Total jobs is {len(jobs)}")
+            logger.info("No new jobs!")
+            # logger.info(f"Total jobs is {len(jobs)}")
         else:
             # Check for removed job listings
             removed_jobs = jobs - new_jobs
             for job in removed_jobs:
-                print(f"Job listing removed! {job}")
+                logger.info(f"Job listing removed! {job}")
                 jobs.remove(job)
 
             # Check for new job listings
             new_listings = new_jobs - jobs
             for job in new_listings:
-                print(f"New job listing! {job}")
+                logger.warning(f"New job listing! {job}")
                 # Send this to phone
                 url = f"https://api.pushover.net/1/messages.json?token={app_token}&user={user_token}&url={job}&message=Job%20alert!"
 
                 response = requests.request("POST", url, verify=False)
 
-                print(response.text)
+                logger.info(response.text)
                 jobs.add(job)
 
             # Update the old jobs file
@@ -90,4 +104,4 @@ if response.status_code == 200:
 
 
 else:
-    print(f"Failed to retrieve jobs. Status code: {response.status_code}")
+    logger.error(f"Failed to retrieve jobs. Status code: {response.status_code}")
