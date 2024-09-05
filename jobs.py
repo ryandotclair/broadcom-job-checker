@@ -1,4 +1,5 @@
 import requests
+import urllib3
 import os
 import logging
 from logging.handlers import RotatingFileHandler
@@ -29,6 +30,9 @@ backup_count = 3  # Keep 3 backup files
 file_handler = RotatingFileHandler(log_path, maxBytes=max_log_size, backupCount=backup_count)
 file_handler.setLevel(logging.DEBUG)
 
+# Disable warnings
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 # Define the URL and headers
 url = 'https://broadcom.wd1.myworkdayjobs.com/wday/cxs/broadcom/External_Career/jobs'
 headers = {
@@ -57,11 +61,41 @@ response = requests.post(url, headers=headers, json=payload, verify=False)
 if response.status_code == 200:
     job_data = response.json()
     job_paths = [job['externalPath'] for job in job_data.get('jobPostings', []) if job.get('externalPath')]
-
+    total_jobs = job_data.get('total')
     # Save the job paths to a file
     with open(new_jobs_file, 'w') as file:
         for path in job_paths:
             file.write(f"https://broadcom.wd1.myworkdayjobs.com/External_Career{path}\n")
+
+    if total_jobs > 20:
+        offset = 20
+
+        while total_jobs > 0:
+            payload = {
+                "appliedFacets": {
+                    "locations": [
+                        "036f545a07811067fe3102fad18abe98",
+                        "0dd627624e2e013c1b0b00dadcd9d20c"
+                    ]
+                },
+                "offset": offset,
+                "searchText": ""
+            }
+
+            response = requests.post(url, headers=headers, json=payload, verify=False)
+
+            if response.status_code == 200:
+                job_data = response.json()
+                job_paths = [job['externalPath'] for job in job_data.get('jobPostings', []) if job.get('externalPath')]
+
+                # Append the new_jobs_file with the next page
+                with open(new_jobs_file, 'a') as file:
+                    for path in job_paths:
+                        file.write(f"https://broadcom.wd1.myworkdayjobs.com/External_Career{path}\n")
+
+                # Grab the next page
+                total_jobs -= offset
+                offset += 20
 
     logger.info("jobs.new.txt file has been updated")
 
