@@ -130,7 +130,7 @@ if response.status_code == 200:
             for job in new_listings:
                 logger.warning(f"New job listing! {job}")
                 # Send this to phone
-                url = f"https://api.pushover.net/1/messages.json?token={app_token}&user={user_token}&url={job}&message=Job%20alert!"
+                url = f"https://api.pushover.net/1/messages.json?token={app_token}&user={user_token}&url={job}&message={job}&title=BCOM%20Job%20Alert!"
 
                 response = requests.request("POST", url, verify=False)
 
