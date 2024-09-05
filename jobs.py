@@ -1,7 +1,7 @@
 import requests
-# import json
 import os
 import logging
+from logging.handlers import RotatingFileHandler
 
 # Define the file names
 new_jobs_file = '/appdata/jobs.new.txt'
@@ -12,9 +12,10 @@ user_token = os.getenv("USER_TOKEN")
 app_token = os.getenv("APP_TOKEN")
 
 # Define and configure logger
+log_path = '/appdata/jobs.log'
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename='jobs.log', encoding='utf-8', level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-file_handler = logging.FileHandler('/appdata/jobs.log')
+file_handler = logging.FileHandler(log_path)
 file_handler.setLevel(logging.INFO)
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
