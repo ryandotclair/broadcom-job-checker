@@ -8,6 +8,10 @@ from logging.handlers import RotatingFileHandler
 new_jobs_file = '/appdata/jobs.new.txt'
 jobs_file = '/appdata/jobs.txt'
 
+# Define logging parameters
+max_log_size = 50 * 1024  # Limit it to 50KB
+backup_count = 3  # Keep 3 backup files
+
 # Define tokens
 user_token = os.getenv("USER_TOKEN")
 app_token = os.getenv("APP_TOKEN")
@@ -22,13 +26,11 @@ console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 file_handler.setFormatter(formatter)
+file_handler = RotatingFileHandler(log_path, maxBytes=max_log_size, backupCount=backup_count)
+file_handler.setLevel(logging.INFO)
 console_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
-max_log_size = 1 * 1024 * 1024  # Limit it to 1 MB
-backup_count = 3  # Keep 3 backup files
-file_handler = RotatingFileHandler(log_path, maxBytes=max_log_size, backupCount=backup_count)
-file_handler.setLevel(logging.DEBUG)
 
 # Disable warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
