@@ -4,6 +4,10 @@ import os
 import logging
 from logging.handlers import RotatingFileHandler
 
+# Define configs
+max_log_size = 50 * 1024  # Limit it to 50KB
+backup_count = 3  # Keep 3 backup files
+
 # Define the file names
 new_jobs_file = '/appdata/jobs.new.txt'
 jobs_file = '/appdata/jobs.txt'
